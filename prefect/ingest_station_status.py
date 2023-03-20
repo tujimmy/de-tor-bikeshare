@@ -6,6 +6,8 @@ import requests
 import json
 from pathlib import Path
 import datetime
+from io import StringIO, BytesIO
+import pyarrow.parquet as pq
 
 
 @task(log_prints=True)
@@ -34,9 +36,9 @@ def flatten_json(data: json) -> pd.DataFrame:
             'is_installed': station['is_installed'],
             'is_renting': station['is_renting'],
             'is_returning': station['is_returning'],
-            'ICONIC_COUNT': 0,
-            'BOOST_COUNT': 0,
-            'EFIT_COUNT': 0,
+            'iconic_count': 0,
+            'boost_count': 0,
+            'efit_count': 0,
             'date': date_string,
             'hour': hour_string
         }
@@ -48,11 +50,11 @@ def flatten_json(data: json) -> pd.DataFrame:
         vehicle_types = station['vehicle_types_available']
         for v in vehicle_types:
             if v['vehicle_type_id'] == 'ICONIC':
-                flat_station['ICONIC_COUNT'] = v['count']
+                flat_station['iconic_count'] = v['count']
             elif v['vehicle_type_id'] == 'BOOST':
-                flat_station['BOOST_COUNT'] = v['count']
+                flat_station['boost_count'] = v['count']
             elif v['vehicle_type_id'] == 'EFIT':
-                flat_station['EFIT_COUNT'] = v['count']
+                flat_station['efit_count'] = v['count']
 
         flat_data.append(flat_station)
     df = pd.DataFrame(flat_data)
@@ -83,6 +85,22 @@ def write_bq(df: pd.DataFrame) -> None:
         if_exists="replace",
     )
 
+@task(log_prints=True)
+def read_gcs(path: Path) -> pd.DataFrame:
+    gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
+    data = gcp_cloud_storage_bucket_block.read_path(path)
+    blob = BytesIO(data)
+    table = pq.read_table(blob)
+    df = table.to_pandas()
+    return df
+
+@task(log_prints=True)
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    # df['last_reported_datetime'] = datetime.datetime.fromtimestamp(df['last_reported']).strftime("%Y-%m-%d %H:%M:%S")
+    df = df[df['last_reported'].notna()]
+    df['last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S"))
+    # print(df)
+    return df 
 
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
@@ -98,6 +116,8 @@ def etl_api_to_gcs(dt: str = None) -> None:
     json_obj = fetch_api(station_api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
+    df = read_gcs(path)
+    df = transform(df)
     write_bq(df)
 
 
