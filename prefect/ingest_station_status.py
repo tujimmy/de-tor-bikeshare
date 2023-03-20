@@ -1,5 +1,6 @@
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
+from prefect_gcp.bigquery import GcpCredentials, BigQueryWarehouse
 from prefect_gcp import GcpCredentials
 import pandas as pd
 import requests
@@ -96,11 +97,15 @@ def read_gcs(path: Path) -> pd.DataFrame:
 
 @task(log_prints=True)
 def transform(df: pd.DataFrame) -> pd.DataFrame:
-    # df['last_reported_datetime'] = datetime.datetime.fromtimestamp(df['last_reported']).strftime("%Y-%m-%d %H:%M:%S")
-    df = df[df['last_reported'].notna()]
-    df['last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S"))
-    # print(df)
+    """Transform"""
+    df.loc[:, 'last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S") if not pd.isna(x) else None)
     return df 
+
+@task(log_prints=True)
+def create_table() -> None:
+    gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
+
+
 
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
