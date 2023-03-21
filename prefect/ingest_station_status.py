@@ -9,6 +9,7 @@ from pathlib import Path
 import datetime
 from io import StringIO, BytesIO
 import pyarrow.parquet as pq
+from utils import round_to_nearest_10min
 
 
 @task(log_prints=True)
@@ -19,9 +20,10 @@ def fetch_api(api_url: str) -> json:
 
 @task(log_prints=True)
 def flatten_json(data: json) -> pd.DataFrame:
-    now = datetime.datetime.now()
+    now = round_to_nearest_10min(datetime.datetime.now())
     date_string = now.strftime("%Y-%m-%d")
     hour_string = now.strftime("%H")
+    minute_string = now.strftime("%M")
 
     flat_data = []
     for station in data:
@@ -41,7 +43,8 @@ def flatten_json(data: json) -> pd.DataFrame:
             'boost_count': 0,
             'efit_count': 0,
             'date': date_string,
-            'hour': hour_string
+            'hour': hour_string,
+            'minute': minute_string
         }
         try:
             flat_station['last_reported'] = station['last_reported']
@@ -73,18 +76,18 @@ def write_gcs(df: pd.DataFrame, path: Path) -> None:
     )
 
 
-@task(log_prints=True)
-def write_bq(df: pd.DataFrame) -> None:
-    """Write to BQ"""
-    print(f"writing rows: {len(df)}")
-    gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
-    df.to_gbq(
-        destination_table="trips_data_all.test_station_info",
-        project_id="root-welder-375217",
-        credentials=gcp_credentials_block.get_credentials_from_service_account(),
-        chunksize=500_000,
-        if_exists="replace",
-    )
+# @task(log_prints=True)
+# def write_bq(df: pd.DataFrame) -> None:
+#     """Write to BQ"""
+#     print(f"writing rows: {len(df)}")
+#     gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
+#     df.to_gbq(
+#         destination_table="trips_data_all.test_station_info",
+#         project_id="root-welder-375217",
+#         credentials=gcp_credentials_block.get_credentials_from_service_account(),
+#         chunksize=500_000,
+#         if_exists="replace",
+#     )
 
 @task(log_prints=True)
 def read_gcs(path: Path) -> pd.DataFrame:
@@ -95,15 +98,15 @@ def read_gcs(path: Path) -> pd.DataFrame:
     df = table.to_pandas()
     return df
 
-@task(log_prints=True)
-def transform(df: pd.DataFrame) -> pd.DataFrame:
-    """Transform"""
-    df.loc[:, 'last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S") if not pd.isna(x) else None)
-    return df 
+# @task(log_prints=True)
+# def transform(df: pd.DataFrame) -> pd.DataFrame:
+#     """Transform"""
+#     df.loc[:, 'last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S") if not pd.isna(x) else None)
+#     return df 
 
-@task(log_prints=True)
-def create_table() -> None:
-    gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
+# @task(log_prints=True)
+# def create_table() -> None:
+#     gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
 
 
 
@@ -112,18 +115,18 @@ def etl_api_to_gcs(dt: str = None) -> None:
     """The main ETL function"""
     station_api_url = "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status"
     if dt is None:
-        now = datetime.datetime.now()
+        now = round_to_nearest_10min(datetime.datetime.now())
         # date_string = now.strftime("%Y%m%d_%H")
-        date_string = now.strftime("%Y%m%d_%H")
+        date_string = now.strftime("%Y%m%d_%H-%M")
     else:
         date_string = dt
     path = f"data/bikeshare/station_status/station_status_{date_string}.parquet"
     json_obj = fetch_api(station_api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
-    df = read_gcs(path)
-    df = transform(df)
-    write_bq(df)
+    # df = read_gcs(path)
+    # df = transform(df)
+    # write_bq(df)
 
 
 if __name__ == '__main__':
