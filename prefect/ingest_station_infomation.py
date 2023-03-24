@@ -1,15 +1,13 @@
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
-from prefect_gcp.bigquery import GcpCredentials, BigQueryWarehouse
 from prefect_gcp import GcpCredentials
 import pandas as pd
 import requests
 import json
 from pathlib import Path
 import datetime
-from io import StringIO, BytesIO
+from io import BytesIO
 import pyarrow.parquet as pq
-from utils import round_to_nearest_10min
 
 
 @task(log_prints=True)
@@ -76,17 +74,6 @@ def read_gcs(path: Path) -> pd.DataFrame:
     df = table.to_pandas()
     return df
 
-# @task(log_prints=True)
-# def transform(df: pd.DataFrame) -> pd.DataFrame:
-#     """Transform"""
-#     df.loc[:, 'last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S") if not pd.isna(x) else None)
-#     return df 
-
-# @task(log_prints=True)
-# def create_table() -> None:
-#     gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
-
-
 
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
@@ -94,7 +81,6 @@ def etl_api_to_gcs(dt: str = None) -> None:
     station_api_url = "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_information"
     if dt is None:
         now = datetime.datetime.now()
-        # date_string = now.strftime("%Y%m%d_%H")
         date_string = now.strftime("%Y%m%d") 
     else:
         date_string = dt
@@ -103,16 +89,8 @@ def etl_api_to_gcs(dt: str = None) -> None:
     df = flatten_json(json_obj)
     write_gcs(df, path)
     df = read_gcs(path)
-    # df = transform(df)
-    # write_bq(df)
+
 
 
 if __name__ == '__main__':
-    # year = 2023
-    # month = 3
-    # day = 1
-    # hour = 0
-    # date_string = f"{year}{month:02}{day:02}_{hour:02}"
-    # date_string = None
-    # etl_api_to_gcs(date_string)
     etl_api_to_gcs()

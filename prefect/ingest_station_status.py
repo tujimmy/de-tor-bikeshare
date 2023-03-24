@@ -1,13 +1,11 @@
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
-from prefect_gcp.bigquery import GcpCredentials, BigQueryWarehouse
-from prefect_gcp import GcpCredentials
 import pandas as pd
 import requests
 import json
 from pathlib import Path
 import datetime
-from io import StringIO, BytesIO
+from io import  BytesIO
 import pyarrow.parquet as pq
 from utils import round_to_nearest_10min
 
@@ -34,7 +32,6 @@ def flatten_json(data: json) -> pd.DataFrame:
             'num_docks_disabled': station['num_docks_disabled'],
             'last_reported': None,
             'is_charging_station': station['is_charging_station'],
-            'status': station['status'],
             'status': station['status'],
             'is_installed': station['is_installed'],
             'is_renting': station['is_renting'],
@@ -76,19 +73,6 @@ def write_gcs(df: pd.DataFrame, path: Path) -> None:
     )
 
 
-# @task(log_prints=True)
-# def write_bq(df: pd.DataFrame) -> None:
-#     """Write to BQ"""
-#     print(f"writing rows: {len(df)}")
-#     gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
-#     df.to_gbq(
-#         destination_table="trips_data_all.test_station_info",
-#         project_id="root-welder-375217",
-#         credentials=gcp_credentials_block.get_credentials_from_service_account(),
-#         chunksize=500_000,
-#         if_exists="replace",
-#     )
-
 @task(log_prints=True)
 def read_gcs(path: Path) -> pd.DataFrame:
     gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
@@ -98,17 +82,6 @@ def read_gcs(path: Path) -> pd.DataFrame:
     df = table.to_pandas()
     return df
 
-# @task(log_prints=True)
-# def transform(df: pd.DataFrame) -> pd.DataFrame:
-#     """Transform"""
-#     df.loc[:, 'last_reported_datetime'] = df['last_reported'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime("%Y-%m-%d %H:%M:%S") if not pd.isna(x) else None)
-#     return df 
-
-# @task(log_prints=True)
-# def create_table() -> None:
-#     gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
-
-
 
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
@@ -116,7 +89,6 @@ def etl_api_to_gcs(dt: str = None) -> None:
     station_api_url = "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status"
     if dt is None:
         now = round_to_nearest_10min(datetime.datetime.now())
-        # date_string = now.strftime("%Y%m%d_%H")
         date_string = now.strftime("%Y%m%d_%H-%M")
     else:
         date_string = dt
@@ -124,17 +96,7 @@ def etl_api_to_gcs(dt: str = None) -> None:
     json_obj = fetch_api(station_api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
-    # df = read_gcs(path)
-    # df = transform(df)
-    # write_bq(df)
 
 
 if __name__ == '__main__':
-    # year = 2023
-    # month = 3
-    # day = 1
-    # hour = 0
-    # date_string = f"{year}{month:02}{day:02}_{hour:02}"
-    # date_string = None
-    # etl_api_to_gcs(date_string)
     etl_api_to_gcs()

@@ -1,0 +1,28 @@
+name: Deploy to Google Cloud Storage
+
+on:
+  push:
+    branches:
+      - main # Change this to the branch you want to deploy from
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0.2.1
+      with:
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        export_default_credentials: true
+
+    - name: Deploy to GCS
+      run: |
+        gsutil -m cp -r pyspark/* gs://$GCS_BUCKET_NAME/
+        echo "Code uploaded to GCS bucket: $GCS_BUCKET_NAME"
+      env:
+        GCS_BUCKET_NAME: "dtc_data_lake_root-welder-375217" # Replace this with your bucket name
