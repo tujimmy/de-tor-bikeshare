@@ -25,7 +25,7 @@ spark.conf.set('temporaryGcsBucket', bucket)
 
 df = spark.read.format("parquet") \
     .option("mergeSchema", "true") \
-    .load(f"gs://{bucket}/data/bikeshare/station_infomation/station_infomation_{target_date}*.parquet")
+    .load(f"gs://{bucket}/data/bikeshare/station_infomation/station_infomation_{target_date.replace('-', '')}*.parquet")
 
 df = df.withColumn(
     "station_id",

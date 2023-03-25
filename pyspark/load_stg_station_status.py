@@ -4,12 +4,24 @@
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, col, date_format, to_date
+from google.cloud import bigquery
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--target_date', type=str, required=True)
 args, unknown = parser.parse_known_args()
 target_date = args.target_date
+
+# Create a BigQuery client
+client = bigquery.Client()
+
+# Set the table and partition identifiers
+dataset_id = 'bikeshare'
+table_id = 'stg_station_status'
+partition_id = f"{table_id}${target_date.replace('-', '')}"
+
+# Delete the partition if it exists
+client.delete_table(f"{dataset_id}.{partition_id}", not_found_ok=True)
 
 # Print the value of target_date
 print(f"Loading stg_station_status for date: {target_date}")
@@ -26,7 +38,7 @@ spark.conf.set('temporaryGcsBucket', bucket)
 
 df = spark.read.format("parquet") \
     .option("mergeSchema", "true") \
-    .load(f"gs://{bucket}/data/bikeshare/station_status/station_status_{target_date}*.parquet")
+    .load(f"gs://{bucket}/data/bikeshare/station_status/station_status_{target_date.replace('-', '')}*.parquet")
 
 df = df.withColumn(
     "station_id",

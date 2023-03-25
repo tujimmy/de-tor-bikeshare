@@ -55,7 +55,7 @@ def submit_batch(
 def load_staging_tables(target_date: str = None) -> None:
     """The main ETL function"""
     if not target_date:
-        target_date = (datetime.today() - timedelta(days=1)).strftime('%Y%m%d')
+        target_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
     gcp = GcpCredentials.load("zoom-gcs-creds")
 
