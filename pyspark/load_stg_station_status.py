@@ -59,7 +59,7 @@ df = df.withColumn(
 print("Saving to table")
 df.write.format('bigquery') \
     .option('table', 'bikeshare.stg_station_status') \
-    .mode('overwrite') \
+    .mode('append') \
     .option("partitionField", "date") \
     .option("clusteredFields", "station_id,hour") \
     .save()
