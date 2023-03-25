@@ -24,7 +24,7 @@ jobs:
 
     - name: Deploy to GCS
       run: |
-        gsutil -m cp -r pyspark/* gs://$GCS_BUCKET_NAME/
+        gsutil -m cp -r pyspark/* gs://$GCS_BUCKET_NAME/code
         echo "Code uploaded to GCS bucket: $GCS_BUCKET_NAME"
       env:
         GCS_BUCKET_NAME: "dtc_data_lake_root-welder-375217" # Replace this with your bucket name
