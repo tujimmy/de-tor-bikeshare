@@ -2,6 +2,8 @@ name: Deploy to Google Cloud Storage
 
 on:
   push:
+    paths:
+      - 'pyspark/**'
     branches:
       - main # Change this to the branch you want to deploy from
 
@@ -17,7 +19,7 @@ jobs:
       uses: google-github-actions/setup-gcloud@v0.2.1
       with:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}F
         export_default_credentials: true
 
     - name: Deploy to GCS
