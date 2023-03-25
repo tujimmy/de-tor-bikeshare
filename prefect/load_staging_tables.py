@@ -2,7 +2,7 @@ from google.cloud import dataproc_v1 as dataproc
 from prefect import flow, task
 from prefect_gcp.bigquery import GcpCredentials, bigquery_create_table
 from prefect_gcp import GcpCredentials
-import datetime
+from datetime import datetime, timedelta
 from prefect_gcp.bigquery import bigquery_create_table
 from google.cloud.bigquery import TimePartitioning
 from utils import create_station_infomation_schema, create_station_status_schema
@@ -55,7 +55,7 @@ def submit_batch(
 def load_staging_tables(target_date: str = None) -> None:
     """The main ETL function"""
     if not target_date:
-        target_date = datetime.today().strftime('%Y%m%d')
+        target_date = (datetime.today() - timedelta(days=1)).strftime('%Y%m%d')
 
     gcp = GcpCredentials.load("zoom-gcs-creds")
 
