@@ -35,7 +35,7 @@ def submit_batch(
             "project_id": project_id
         },
         "pyspark_job": {
-            "main_python_file_uri": python_file,
+            "main_python_file_uri": f"gs://dtc_data_lake_root-welder-375217/code/{python_file}",
             "properties": {},
             "args": [
                 f"--target_date={target_date}"
@@ -54,6 +54,9 @@ def submit_batch(
 @flow()
 def load_staging_tables(target_date: str = None) -> None:
     """The main ETL function"""
+    if not target_date:
+        target_date = datetime.today().strftime('%Y%m%d')
+
     gcp = GcpCredentials.load("zoom-gcs-creds")
 
     # Creating staging table for station_status
