@@ -25,7 +25,7 @@ def submit_batch(
         client_options={
             "api_endpoint": "{}-dataproc.googleapis.com:443".format(region)}
     )
-    current_timestamp = round(datetime.datetime.now().timestamp())
+    current_timestamp = round(datetime.now().timestamp())
     job = {
         "placement": {
             "cluster_name": cluster_name
