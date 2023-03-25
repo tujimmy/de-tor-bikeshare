@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-"""BigQuery I/O PySpark example."""
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, col, date_format, to_date, split
 import argparse
@@ -10,12 +6,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--target_date', type=str, required=True)
 args, unknown = parser.parse_known_args()
 target_date = args.target_date
-# target_date = "20230322"
+
 print(f"Loading stg_station_infomation for date: {target_date}")
 spark = SparkSession \
     .builder \
     .master('yarn') \
-    .appName('spark-bigquery-demo') \
+    .appName('spark-load-stg-station-infomation') \
     .getOrCreate()
 
 # Use the Cloud Storage bucket for temporary BigQuery export data used

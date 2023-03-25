@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-"""BigQuery I/O PySpark example."""
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, col, date_format, to_date
 from google.cloud import bigquery
@@ -28,7 +24,7 @@ print(f"Loading stg_station_status for date: {target_date}")
 spark = SparkSession \
     .builder \
     .master('yarn') \
-    .appName('spark-bigquery-demo') \
+    .appName('spark-load-stg-station-status') \
     .getOrCreate()
 
 # Use the Cloud Storage bucket for temporary BigQuery export data used
