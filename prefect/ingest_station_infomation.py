@@ -8,7 +8,7 @@ from pathlib import Path
 import datetime
 from io import BytesIO
 import pyarrow.parquet as pq
-
+from utils import read_local_config
 
 @task(log_prints=True)
 def fetch_api(api_url: str) -> json:
@@ -78,14 +78,16 @@ def read_gcs(path: Path) -> pd.DataFrame:
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
     """The main ETL function"""
-    station_api_url = "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_information"
+    config = read_local_config()
+    bucket = config['bucket']
+    api_url = config['station_infomation_url']
     if dt is None:
         now = datetime.datetime.now()
         date_string = now.strftime("%Y%m%d") 
     else:
         date_string = dt
     path = f"data/bikeshare/station_infomation/station_infomation_{date_string}.parquet"
-    json_obj = fetch_api(station_api_url)
+    json_obj = fetch_api(api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
     df = read_gcs(path)

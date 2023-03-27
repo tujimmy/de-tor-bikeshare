@@ -1,5 +1,6 @@
 import datetime
 from google.cloud.bigquery import SchemaField
+import json
 
 def round_to_nearest_10min(dt):
     """
@@ -51,3 +52,8 @@ def create_station_infomation_schema():
         SchemaField("street_2", "STRING")
     ]
     return schema
+
+def read_local_config(config_file_path: str = "config/config.json"):
+    with open(config_file_path, "r") as file:
+        config = json.load(file)
+    return config
