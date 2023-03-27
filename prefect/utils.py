@@ -53,7 +53,7 @@ def create_station_infomation_schema():
     ]
     return schema
 
-def read_local_config(config_file_path: str = "config/config.json"):
+def read_local_config(config_file_path: str = "prefect/config/config.json"):
     with open(config_file_path, "r") as file:
         config = json.load(file)
     return config
