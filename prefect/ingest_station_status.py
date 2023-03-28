@@ -10,7 +10,7 @@ import pyarrow.parquet as pq
 from utils import round_to_nearest_10min
 
 
-@task(log_prints=True)
+@task(log_prints=True, retries=3, retry_delay_seconds=30)
 def fetch_api(api_url: str) -> json:
     response = requests.get(api_url)
     return response.json()['data']['stations']
@@ -62,7 +62,7 @@ def flatten_json(data: json) -> pd.DataFrame:
     return df
 
 
-@task(log_prints=True)
+@task(log_prints=True, retries=3, retry_delay_seconds=30)
 def write_gcs(df: pd.DataFrame, path: Path) -> None:
     """Upload local parquet file to GCS"""
     gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
@@ -73,7 +73,7 @@ def write_gcs(df: pd.DataFrame, path: Path) -> None:
     )
 
 
-@task(log_prints=True)
+@task(log_prints=True, retries=3, retry_delay_seconds=30)
 def read_gcs(path: Path) -> pd.DataFrame:
     gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
     data = gcp_cloud_storage_bucket_block.read_path(path)

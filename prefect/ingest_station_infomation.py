@@ -10,7 +10,7 @@ from io import BytesIO
 import pyarrow.parquet as pq
 from utils import read_local_config
 
-@task(log_prints=True)
+@task(log_prints=True, retries=3, retry_delay_seconds=30)
 def fetch_api(api_url: str) -> json:
     response = requests.get(api_url)
     return response.json()['data']['stations']
@@ -41,7 +41,7 @@ def flatten_json(data: json) -> pd.DataFrame:
     return df
 
 
-@task(log_prints=True)
+@task(log_prints=True, retries=3, retry_delay_seconds=30)
 def write_gcs(df: pd.DataFrame, path: Path) -> None:
     """Upload local parquet file to GCS"""
     gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
@@ -50,29 +50,6 @@ def write_gcs(df: pd.DataFrame, path: Path) -> None:
         to_path=path,
         serialization_format='parquet'
     )
-
-
-@task(log_prints=True)
-def write_bq(df: pd.DataFrame) -> None:
-    """Write to BQ"""
-    print(f"writing rows: {len(df)}")
-    gcp_credentials_block = GcpCredentials.load("zoom-gcs-creds")
-    df.to_gbq(
-        destination_table="trips_data_all.test_station_info_1",
-        project_id="root-welder-375217",
-        credentials=gcp_credentials_block.get_credentials_from_service_account(),
-        chunksize=500_000,
-        if_exists="replace",
-    )
-
-@task(log_prints=True)
-def read_gcs(path: Path) -> pd.DataFrame:
-    gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
-    data = gcp_cloud_storage_bucket_block.read_path(path)
-    blob = BytesIO(data)
-    table = pq.read_table(blob)
-    df = table.to_pandas()
-    return df
 
 
 @flow()
