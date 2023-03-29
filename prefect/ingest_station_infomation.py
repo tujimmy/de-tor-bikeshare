@@ -67,8 +67,6 @@ def etl_api_to_gcs(dt: str = None) -> None:
     json_obj = fetch_api(api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
-    df = read_gcs(path)
-
 
 
 if __name__ == '__main__':
