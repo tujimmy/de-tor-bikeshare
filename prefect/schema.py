@@ -44,17 +44,20 @@ def create_station_infomation_schema():
 
 def create_bike_availability_schema():
     schema = [
-        SchemaField("station_id", "INTEGER"),
-        SchemaField("name", "STRING"),
-        SchemaField("date", "DATE"),
-        SchemaField("physical_configuration", "STRING"),
-        SchemaField("lat", "FLOAT"),
-        SchemaField("lon", "FLOAT"),
-        SchemaField("address", "STRING"),
-        SchemaField("capacity", "INTEGER"),
-        SchemaField("is_charging_station", "BOOLEAN"),
-        SchemaField("is_virtual_station", "BOOLEAN"),
-        SchemaField("street_1", "STRING"),
-        SchemaField("street_2", "STRING")
+        SchemaField("station_id", "INTEGER", mode="NULLABLE"),
+        SchemaField("name", "STRING", mode="NULLABLE"),
+        SchemaField("date", "DATE", mode="NULLABLE"),
+        SchemaField("time_period", "STRING", mode="REQUIRED"),
+        SchemaField("period_start", "TIMESTAMP", mode="NULLABLE"),
+        SchemaField("week_day", "STRING", mode="NULLABLE"),
+        SchemaField("capacity", "INTEGER", mode="NULLABLE"),
+        SchemaField("is_charging_station", "BOOLEAN", mode="NULLABLE"),
+        SchemaField("lat", "FLOAT", mode="NULLABLE"),
+        SchemaField("lon", "FLOAT", mode="NULLABLE"),
+        SchemaField("avg_bikes_available", "FLOAT", mode="NULLABLE"),
+        SchemaField("avg_ebikes_available", "FLOAT", mode="NULLABLE"),
+        SchemaField("avg_docks_available", "FLOAT", mode="NULLABLE"),
+        SchemaField("avg_docks_disabled", "FLOAT", mode="NULLABLE"),
+        SchemaField("avg_availability_ratio", "FLOAT", mode="NULLABLE")
     ]
     return schema

@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 
 from google.cloud import dataproc_v1 as dataproc
 from google.cloud.bigquery import TimePartitioning
-from prefect import flow, task
 
+from prefect import flow, task
 from prefect_gcp import GcpCredentials
 from prefect_gcp.bigquery import bigquery_create_table
 from schema import (create_bike_availability_schema,
@@ -52,7 +52,7 @@ def submit_batch(
                 jar
             ],
             "python_file_uris": [
-                f"gs://{bucket}/code/spark_utils .py"
+                f"gs://{bucket}/code/spark_utils.py"
             ]
         }
     }
@@ -130,7 +130,7 @@ def load_staging_tables(target_date: str = None) -> None:
 
     submit_batch(
         job_name="load_bike_availability",
-        python_file="load_stg_station_infomation.py",
+        python_file="load_bike_availability.py",
         target_date=target_date,
         bucket=bucket,
         cluster_name=cluster_name,
@@ -138,7 +138,6 @@ def load_staging_tables(target_date: str = None) -> None:
         region=region,
         dataset_id=dataset_id
     )
-
 
 
 if __name__ == '__main__':
