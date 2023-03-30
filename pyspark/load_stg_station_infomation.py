@@ -1,27 +1,22 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_unixtime, col, date_format, to_date, split
-import argparse
+import sys
+from pyspark.sql.functions import col, to_date, split
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--target_date', type=str, required=True)
-args, unknown = parser.parse_known_args()
-target_date = args.target_date
+from spark_utils import create_spark_session, read_parquet_data, parse_arguments
+
+
+parsed_args = parse_arguments(sys.argv[1:])
+
+target_date = parsed_args['target_date']
+bucket = parsed_args['bucket']
+table_id = 'stg_station_infomation'
 
 print(f"Loading stg_station_infomation for date: {target_date}")
-spark = SparkSession \
-    .builder \
-    .master('yarn') \
-    .appName('spark-load-stg-station-infomation') \
-    .getOrCreate()
+spark = create_spark_session('spark-load-stg-station-infomation', bucket)
 
-# Use the Cloud Storage bucket for temporary BigQuery export data used
-# by the connector.
-bucket = "dtc_data_lake_root-welder-375217"
-spark.conf.set('temporaryGcsBucket', bucket)
-
-df = spark.read.format("parquet") \
-    .option("mergeSchema", "true") \
-    .load(f"gs://{bucket}/data/bikeshare/station_infomation/station_infomation_{target_date.replace('-', '')}*.parquet")
+df = read_parquet_data(
+    spark, 
+    f"gs://{bucket}/data/bikeshare/station_infomation/station_infomation_{target_date.replace('-', '')}*.parquet"
+    )
 
 df = df.withColumn(
     "station_id",
