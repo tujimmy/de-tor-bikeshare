@@ -1,21 +1,26 @@
-from google.cloud import dataproc_v1 as dataproc
-from prefect import flow, task
-from prefect_gcp.bigquery import GcpCredentials, bigquery_create_table
-from prefect_gcp import GcpCredentials
 from datetime import datetime, timedelta
-from prefect_gcp.bigquery import bigquery_create_table
-from google.cloud.bigquery import TimePartitioning
-from utils import create_station_infomation_schema, create_station_status_schema
 
+from google.cloud import dataproc_v1 as dataproc
+from google.cloud.bigquery import TimePartitioning
+from prefect import flow, task
+
+from prefect_gcp import GcpCredentials
+from prefect_gcp.bigquery import bigquery_create_table
+from schema import (create_bike_availability_schema,
+                    create_station_infomation_schema,
+                    create_station_status_schema)
+from utils import read_local_config
 
 @task(log_prints=True)
 def submit_batch(
     job_name: str,
     python_file: str,
     target_date: str,
+    bucket: str,
     cluster_name: str,
     project_id: str,
     region: str,
+    dataset_id: str,
 ):
     gcp = GcpCredentials.load("zoom-gcs-creds")
 
@@ -35,10 +40,13 @@ def submit_batch(
             "project_id": project_id
         },
         "pyspark_job": {
-            "main_python_file_uri": f"gs://dtc_data_lake_root-welder-375217/code/{python_file}",
+            "main_python_file_uri": f"gs:/{bucket}/code/{python_file}",
             "properties": {},
             "args": [
-                f"--target_date={target_date}"
+                f"--target_date={target_date}",
+                f"--bucket={bucket}",
+                f"--project_id={project_id}",
+                f"--dataset_id={dataset_id}",
             ],
             "jar_file_uris": [
                 jar
@@ -58,6 +66,7 @@ def load_staging_tables(target_date: str = None) -> None:
         target_date = (datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
     gcp = GcpCredentials.load("zoom-gcs-creds")
+    config = read_local_config()
 
     # Creating staging table for station_status
     bigquery_create_table(
@@ -77,27 +86,43 @@ def load_staging_tables(target_date: str = None) -> None:
         gcp_credentials=gcp
     )
 
-    # Defining common variables to submit spark job
-    project_id = "root-welder-375217"
-    cluster_name = "cluster-62de"
-    region = "us-central1"
+    # Creating staging table for bike_availability
+    bigquery_create_table(
+        dataset="bikeshare",
+        table="bike_availability",
+        schema=create_bike_availability_schema(),
+        gcp_credentials=gcp,
+        clustering_fields=["station_id"],
+        time_partitioning=TimePartitioning(field="date"),
+    )
+
+    # Defining common variables to submit spark job   
+    project_id = config['project_id']
+    cluster_name = config['cluster_name']
+    region = config['region']
+    bucket = config['bucket']
+    dataset_id = config['dataset_id']
 
     submit_batch(
         job_name="load_stg_station_status",
         python_file="load_stg_station_status.py",
         target_date=target_date,
+        bucket=bucket,
         cluster_name=cluster_name,
         project_id=project_id,
-        region=region
+        region=region,
+        dataset_id=dataset_id
     )
 
     submit_batch(
         job_name="load_stg_station_infomation",
         python_file="load_stg_station_infomation.py",
         target_date=target_date,
+        bucket=bucket,
         cluster_name=cluster_name,
         project_id=project_id,
-        region=region
+        region=region,
+        dataset_id=dataset_id
     )
 
 

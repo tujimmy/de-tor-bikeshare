@@ -6,8 +6,6 @@ import requests
 import json
 from pathlib import Path
 import datetime
-from io import BytesIO
-import pyarrow.parquet as pq
 from utils import read_local_config
 
 @task(log_prints=True, retries=3, retry_delay_seconds=30)

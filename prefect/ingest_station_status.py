@@ -5,9 +5,7 @@ import requests
 import json
 from pathlib import Path
 import datetime
-from io import  BytesIO
-import pyarrow.parquet as pq
-from utils import round_to_nearest_10min
+from utils import read_local_config, round_to_nearest_10min
 
 
 @task(log_prints=True, retries=3, retry_delay_seconds=30)
@@ -73,27 +71,18 @@ def write_gcs(df: pd.DataFrame, path: Path) -> None:
     )
 
 
-@task(log_prints=True, retries=3, retry_delay_seconds=30)
-def read_gcs(path: Path) -> pd.DataFrame:
-    gcp_cloud_storage_bucket_block = GcsBucket.load("zoom-gcs")
-    data = gcp_cloud_storage_bucket_block.read_path(path)
-    blob = BytesIO(data)
-    table = pq.read_table(blob)
-    df = table.to_pandas()
-    return df
-
-
 @flow()
 def etl_api_to_gcs(dt: str = None) -> None:
     """The main ETL function"""
-    station_api_url = "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status"
+    config = read_local_config()
+    api_url = config['station_status_url']
     if dt is None:
         now = round_to_nearest_10min(datetime.datetime.now())
         date_string = now.strftime("%Y%m%d_%H-%M")
     else:
         date_string = dt
     path = f"data/bikeshare/station_status/station_status_{date_string}.parquet"
-    json_obj = fetch_api(station_api_url)
+    json_obj = fetch_api(api_url)
     df = flatten_json(json_obj)
     write_gcs(df, path)
 
