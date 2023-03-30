@@ -1,5 +1,5 @@
 import sys
-from pyspark.sql.functions import col, to_date
+from pyspark.sql.functions import col, to_date, date_format
 from google.cloud import bigquery
 
 from spark_utils import create_spark_session, read_parquet_data, parse_arguments
