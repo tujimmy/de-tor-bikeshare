@@ -40,7 +40,7 @@ def submit_batch(
             "project_id": project_id
         },
         "pyspark_job": {
-            "main_python_file_uri": f"gs:/{bucket}/code/{python_file}",
+            "main_python_file_uri": f"gs://{bucket}/code/{python_file}",
             "properties": {},
             "args": [
                 f"--target_date={target_date}",
@@ -50,6 +50,9 @@ def submit_batch(
             ],
             "jar_file_uris": [
                 jar
+            ],
+            "python_file_uris": [
+                f"gs://{bucket}/code/spark_utils .py"
             ]
         }
     }
@@ -124,6 +127,18 @@ def load_staging_tables(target_date: str = None) -> None:
         region=region,
         dataset_id=dataset_id
     )
+
+    submit_batch(
+        job_name="load_bike_availability",
+        python_file="load_stg_station_infomation.py",
+        target_date=target_date,
+        bucket=bucket,
+        cluster_name=cluster_name,
+        project_id=project_id,
+        region=region,
+        dataset_id=dataset_id
+    )
+
 
 
 if __name__ == '__main__':
