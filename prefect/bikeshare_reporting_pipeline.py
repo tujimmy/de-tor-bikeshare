@@ -82,7 +82,7 @@ def start_cluster(gcp_key: dict, project_id: str, region: str, cluster_name: str
     print("Waiting for operation to complete...")
 
     response = operation.result()
-    wait_for_cluster_state(dataproc_client, project_id, region, cluster_name, "RUNNING")
+    wait_for_cluster_state(dataproc_client, project_id, region, cluster_name, dataproc_v1.ClusterStatus.State.RUNNING)
 
     print("Cluster started successfully.")
 
@@ -108,7 +108,7 @@ def stop_cluster(gcp_key: dict, project_id: str, region: str, cluster_name: str)
     response = operation.result()
 
     # Wait for the cluster to be in STOPPED state
-    wait_for_cluster_state(dataproc_client, project_id, region, cluster_name, "STOPPED")
+    wait_for_cluster_state(dataproc_client, project_id, region, cluster_name, dataproc_v1.ClusterStatus.State.STOPPED)
 
     print("Master instance stopped successfully.")
 
