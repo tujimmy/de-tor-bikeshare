@@ -48,6 +48,8 @@ The data pipeline consists of three Prefect flows:
 
 ## Project Architecture
 
+(Cloud Architecture.png)
+
 The project architecture consists of a set of interconnected components designed to handle various aspects of data ingestion, processing, storage, and analysis. The key components are as follows:
 
 - Data Ingestion: The system retrieves real-time Station Status and daily Station Information data from the City of Toronto's Open Data API. Prefect is used to orchestrate the data ingestion process, ensuring that the data is collected at the appropriate intervals.
@@ -66,7 +68,7 @@ The project architecture is designed to provide a scalable, reliable, and effici
 ### Prerequisites
 - Python 3
 - Google Cloud Account
-- Google Cloud Service Account JSON credentials for (Compute, BigQuery, DataProc, Cloud Storage admin)
+- Google Cloud Service Account JSON credentials for (Compute, BigQuery, DataProc and Cloud Storage admin)
 - Prefect Cloud
 - Terraform
 - Git
@@ -109,7 +111,7 @@ The project architecture is designed to provide a scalable, reliable, and effici
     GCS_BUCKET_NAME
 6. Update variables 
     ```prefect/config/config.json```
-    ```{
+    ```
     "project_id": "root-welder-375217",
     "dataset_id": "bikeshare",
     "cluster_name": "cluster-62de",
@@ -117,19 +119,27 @@ The project architecture is designed to provide a scalable, reliable, and effici
     "bucket": "dtc_data_lake_root-welder-375217",
     "station_status_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status",
     "station_infomation_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_information"
-  }```
-  Update the config to your
-  1. project_id
-  2. cluster_name
-  3. region
-  4. bucket
+    ```
+  
+    Update the config to your values for the following 
+
+    - project_id
+    - cluster_name
+    - region
+    - bucket
+
+
 7. Prefect Cloud login
 
-    ```prefect cloud login```
+    `prefect cloud login`
+
+
     Follow instructions to login via browser or API key
 
 8. Prefect Block Setup
-    Login (Prefect Cloud)[https://app.prefect.cloud/]
+
+    Login [Prefect Cloud](https://app.prefect.cloud/)
+
     Click on Blocks
         Create the following blocks and names to avoid having to update these names in the code
     
@@ -138,11 +148,19 @@ The project architecture is designed to provide a scalable, reliable, and effici
         GitHub (github-block)
 
 9. Setup Agent (Local or VM)
+
     Local
-    ```prefect agent start --pool default-agent-pool```
-    VM
+    
+    In your terminal type
+
+    `prefect agent start --pool default-agent-pool`
+
+    Virtual Machine
+
     ```pip install -r requirements```
+
     ```prefect cloud login```
+
     ```prefect agent start --pool default-agent-pool```
 
 10. Deploy the Prefect Pipelines

@@ -4,7 +4,6 @@
     "cluster_name": "cluster-62de",
     "region": "us-central1",
     "bucket": "dtc_data_lake_root-welder-375217",
-    "gcs_config_path": "gs://your_bucket/path/to/config.json",
     "station_status_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status",
     "station_infomation_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_information"
   }
