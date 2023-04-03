@@ -48,7 +48,7 @@ The data pipeline consists of three Prefect flows:
 
 ## Project Architecture
 
-(Cloud Architecture.png)
+![Cloud Architecture](https://github.com/tujimmy/de-tor-bikeshare/blob/main/Cloud%20Architecture.png)
 
 The project architecture consists of a set of interconnected components designed to handle various aspects of data ingestion, processing, storage, and analysis. The key components are as follows:
 
