@@ -1,0 +1,6 @@
+prefect==2.8.6
+prefect-gcp==0.3.0
+pandas==1.5.3
+pandas-gbq==0.19.1
+google-cloud==0.34.0
+google-cloud-dataproc==5.4.0
