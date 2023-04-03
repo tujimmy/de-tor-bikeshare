@@ -72,45 +72,86 @@ The project architecture is designed to provide a scalable, reliable, and effici
 - Git
 
 1. Clone this repository
-2. # Refresh service-account's auth-token for this session
-    gcloud auth application-default login
-2. Terraform
+2. Refresh service-account's auth-token for this session
+
+    ```gcloud auth application-default login```
+3. Terraform
    Change to terraform directory
-     cd terraform
+
+     ```cd terraform```
     
     Initialize terrform
-    terraform init
+
+    ```terraform init```
 
     Preview the changes to be applied:
-    terraform plan
+    ```terraform plan```
     It will ask for your GCP Project ID and a name for your DataProc Cluster
 
     Apply the changes:
-    terraform apply
+    ```terraform apply```
 
-3. Install the required Python packages:
-    pip install -r requirements.txt
-4. Configure git secrets for git actions
-    secrets.GCP_SA_KEY
-    secrets.GCP_PROJECT_ID
-    GCS_BUCKET_NAME in .github/workflows/deploy-to-gcs.yaml
-5. Update prefect/config/config.json
-6. Prefect Cloud login
-    prefect cloud login
-6. Prefect Block Setup
-    GCP Cred (zoom-gcs-creds)
-    GCS Bucket (zoom-gcs)
-    GitHub (github-block)
-8. Setup Agent (Local or VM)
+4. Install the required Python packages:
+
+    ```pip install -r requirements.txt```
+
+5. Configure git secrets for git actions 
+    Go into your repository settings
+    Click Secrets and variables
+    Click New repository secret
+
+    Name:GCP_SA_KEY
+    Value: Your GCP SA Key Value
+    Name:GCP_PROJECT_ID
+    Value: Your GCP Project ID
+
+    Add your bucket name in this deploy-to-gcs.yaml
+    GCS_BUCKET_NAME
+6. Update variables 
+    ```prefect/config/config.json```
+    ```{
+    "project_id": "root-welder-375217",
+    "dataset_id": "bikeshare",
+    "cluster_name": "cluster-62de",
+    "region": "us-central1",
+    "bucket": "dtc_data_lake_root-welder-375217",
+    "station_status_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_status",
+    "station_infomation_url": "https://toronto-us.publicbikesystem.net/customer/gbfs/v2/en/station_information"
+  }```
+  Update the config to your
+  1. project_id
+  2. cluster_name
+  3. region
+  4. bucket
+7. Prefect Cloud login
+
+    ```prefect cloud login```
+    Follow instructions to login via browser or API key
+
+8. Prefect Block Setup
+    Login (Prefect Cloud)[https://app.prefect.cloud/]
+    Click on Blocks
+        Create the following blocks and names to avoid having to update these names in the code
+    
+        GCP Credentials (zoom-gcs-creds)
+        GCS Bucket (zoom-gcs)
+        GitHub (github-block)
+
+9. Setup Agent (Local or VM)
     Local
-    prefect agent start --pool default-agent-pool
+    ```prefect agent start --pool default-agent-pool```
     VM
-    pip install -r requirements
-    prefect cloud login
-    prefect agent start --pool default-agent-pool
+    ```pip install -r requirements```
+    ```prefect cloud login```
+    ```prefect agent start --pool default-agent-pool```
 
-7. Deploy the Prefect Pipelines
-    prefect deployment build prefect/ingest_station_status.py:etl_api_to_gcs --name ingest_station_status --tag main -sb github/github-block --cron "1-59/10 * * * *" --timezone US/Eastern -a
-    prefect deployment build prefect/ingest_station_infomation.py:etl_api_to_gcs --name ingest_station_infomation --tag main -sb github/github-block --cron "1 0 * * *" --timezone US/Eastern -a
-    prefect deployment build prefect/bikeshare_reporting_pipeline.py:bikeshare_reporting_pipeline --name bikeshare_reporting_pipeline --tag main -sb github/github-block --cron "1 1 * * *" --timezone US/Eastern -a
+10. Deploy the Prefect Pipelines
+
+    Feel free to adjust the time it runs with cron
+
+    ```prefect deployment build prefect/ingest_station_status.py:etl_api_to_gcs --name ingest_station_status --tag main -sb github/github-block --cron "1-59/10 * * * *" --timezone US/Eastern -a```
+
+    ```prefect deployment build prefect/ingest_station_infomation.py:etl_api_to_gcs --name ingest_station_infomation --tag main -sb github/github-block --cron "1 0 * * *" --timezone US/Eastern -a```
+
+    ```prefect deployment build prefect/bikeshare_reporting_pipeline.py:bikeshare_reporting_pipeline --name bikeshare_reporting_pipeline --tag main -sb github/github-block --cron "1 1 * * *" --timezone US/Eastern -a```
 
