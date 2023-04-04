@@ -12,7 +12,7 @@ For more details on the pricing changes, please visit [Recommended Pricing Chang
 
 1. What are the availabilities of e-bikes before and after the price changes?
 2. Which stations are frequently full or empty?
-3. At what times are stations full or empty?
+3. Which stations are underutilized?
 
 ## About the Dataset
 
