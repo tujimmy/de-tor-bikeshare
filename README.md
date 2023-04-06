@@ -117,17 +117,20 @@ Discover insights from our live and interactive dashboard, which will be updated
     ```pip install -r requirements.txt```
 
 5. Configure git secrets for git actions 
-    Go into your repository settings
-    Click Secrets and variables
-    Click New repository secret
+    
+    1. Go into your repository settings
+    
+    2. Click Secrets and variables
+    
+    3. Click New repository secret and add the following two secrets
 
-    Name:GCP_SA_KEY
-    Value: Your GCP SA Key Value
-    Name:GCP_PROJECT_ID
-    Value: Your GCP Project ID
+            Name:GCP_SA_KEY
+            Value: Your GCP SA Key Value
+            Name:GCP_PROJECT_ID
+            Value: Your GCP Project ID
 
-    Add your bucket name in this deploy-to-gcs.yaml
-    GCS_BUCKET_NAME
+    4. Add your bucket name to the variable GCS_BUCKET_NAME in deploy-to-gcs.yaml
+    
 6. Update variables 
     ```prefect/config/config.json```
     ```
