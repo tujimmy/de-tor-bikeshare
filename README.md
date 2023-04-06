@@ -61,7 +61,26 @@ The project architecture consists of a set of interconnected components designed
 
 The project architecture is designed to provide a scalable, reliable, and efficient solution for ingesting, processing, storing, and analyzing Toronto Bikeshare data, ultimately enabling stakeholders to make data-driven decisions and improve the system's performance.
 
-## Results
+## Explore the Results
+
+Discover insights from our live and interactive dashboard, which will be updated daily until my credits expire.
+
+[View Live Dashboard](https://lookerstudio.google.com/reporting/395b8a83-0eb5-4b44-978f-b379b303457d)
+
+### Overall View with Interactive Chart to drill down on individual stations
+![Main](https://raw.githubusercontent.com/tujimmy/de-tor-bikeshare/main/assets/overall.png)
+
+### High-usage Station 
+![High](https://github.com/tujimmy/de-tor-bikeshare/blob/main/assets/high%20usage_1.png?raw=true)
+
+### Low-usage Station
+![Low](https://github.com/tujimmy/de-tor-bikeshare/blob/main/assets/low_usage_1.png?raw=true)
+
+### Charging vs Non Charging Stations 
+![ChargingStation](https://github.com/tujimmy/de-tor-bikeshare/blob/main/assets/station_types.png?raw=true)
+
+### Top Stations Featuring E-Bikes
+![EBikeStation](https://github.com/tujimmy/de-tor-bikeshare/blob/main/assets/top_station_with_ebike.png?raw=true)
 
 ## Reproduction steps
 
